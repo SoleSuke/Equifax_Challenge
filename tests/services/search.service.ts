@@ -23,8 +23,9 @@ export class SearchService extends BaseApiService {
         total_results: expect.any(Number),
         results: expect.any(Array)
       }));
-
       expect(body.results.length).toBeGreaterThan(0);
+
+      expect(body.page).toBe(1);
 
       const resultSearch = body.results[0];
       expect(resultSearch).toEqual(expect.objectContaining({
