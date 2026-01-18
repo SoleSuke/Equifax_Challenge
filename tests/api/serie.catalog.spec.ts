@@ -8,7 +8,7 @@ const catalogs = [
   { name: 'Top Rated', path: '/3/tv/top_rated' },
   { name: 'Popular', path: '/3/tv/popular' },
   { name: 'Airing Today', path: '/3/tv/airing_today' },
-  { name: 'On the Air', path: '//tv/on_the_air' }
+  { name: 'On the Air', path: '/3/tv/on_the_air' }
 ];
 
 for (const catalog of catalogs) {
