@@ -4,47 +4,49 @@ import { SearchService } from '../services/search.service';
 
 test.describe.configure({ mode: 'parallel' });
 
-const catalogs = [
-  { name: 'Movie', path: '/3/search/movie' },
-  { name: 'Serie', path: '/3/search/tv' },
-  { name: 'Person', path: '/3/search/person' }
-];
-
-for (const catalog of catalogs) {
-  test(`Validate Search ${catalog.name} in catalog`, async ({}, TestInfo) => {
-    const api = await createApiContext(`${process.env.TMDB_ACCESS_TOKEN}`);
+test (`Validate Search Movie in catalog`, async ({}, TestInfo) => {
+  const api = await createApiContext(`${process.env.TMDB_ACCESS_TOKEN}`);
     const service = new SearchService(api);
     const searchParams = new URLSearchParams();
-    const endpoint = catalog.path;
+    const endpoint = '/3/search/movie';
+    searchParams.append('query', 'Inception');
 
-    if (catalog.name === 'Movie') {
-      searchParams.append('query', 'Inception');
-    } else if (catalog.name === 'Serie') {
-      searchParams.append('query','Friends');
-      searchParams.append('page', '1');
-    } else if (catalog.name === 'Person') {
-      searchParams.append('query','Britney');
-      searchParams.append('query','Spears');
-    } else {
-      console.log('Out of Catalogue for Search');
-    }
-    const response = await service.search(catalog.path, searchParams);
-    //searchParams.append('query', 'Inception');
-    //const response = await service.getCatalog(catalog.path);
-    await service.assertSuccess(response, endpoint, TestInfo);
-  });
-}
+    const response = await service.search(endpoint, searchParams);
+    await service.assertSuccessMovie(response, endpoint, TestInfo);
+});
+
+test (`Validate Search Serie in catalog`, async ({}, TestInfo) => {
+  const api = await createApiContext(`${process.env.TMDB_ACCESS_TOKEN}`);
+    const service = new SearchService(api);
+    const searchParams = new URLSearchParams();
+    const endpoint = '/3/search/tv';
+    searchParams.append('query','Friends');
+    searchParams.append('page', '1');
+
+    const response = await service.search(endpoint, searchParams);
+    await service.assertSuccessSerie(response, endpoint, TestInfo);
+});
+
+test (`Validate Search Person in catalog`, async ({}, TestInfo) => {
+  const api = await createApiContext(`${process.env.TMDB_ACCESS_TOKEN}`);
+    const service = new SearchService(api);
+    const searchParams = new URLSearchParams();
+    const endpoint = '/3/search/person';
+    searchParams.append('query','Britney');
+    searchParams.append('query','Spears');
+
+    const response = await service.search(endpoint, searchParams);
+    await service.assertSuccessPerson(response, endpoint, TestInfo);
+});
 
 test('Unauthorized Search request should return 401', async ({}, TestInfo) => {
   const api = await createApiContext(`${process.env.TMDB_BAD_API_KEY}`);
   const service = new SearchService(api);
   const searchParams = new URLSearchParams();
-  const endpoint = '/3/search/movie';
-  
+  const endpoint = '/3/search/movie'; 
   searchParams.append('query', 'Titanic');
 
   const response = await service.search(endpoint, searchParams)
-
   await service.assertUnauthorized(response, endpoint, TestInfo);
 });
 
@@ -53,10 +55,8 @@ test('Empty Search request should return 200 and no results', async ({}, TestInf
   const service = new SearchService(api);
   const searchParams = new URLSearchParams();
   const endpoint = '/3/search/tv';
-  
   searchParams.append('query', '');
 
   const response = await service.search(endpoint, searchParams)
-
   await service.assertEmptySearch(response, endpoint, TestInfo);
 });
