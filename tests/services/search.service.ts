@@ -3,7 +3,7 @@ import { BaseApiService } from './baseApi.service';
 
 export class SearchService extends BaseApiService {
 
-  async search(endpoint: string, parameters?: { [key: string]: string|number|boolean; }|URLSearchParams|string) {
+  async search(endpoint: string, parameters?: URLSearchParams) {
     return this.get(endpoint, parameters);
   }
 
