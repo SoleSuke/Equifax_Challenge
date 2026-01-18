@@ -8,39 +8,42 @@ const catalogs = [
   { name: 'Top Rated', path: '/3/tv/top_rated' },
   { name: 'Popular', path: '/3/tv/popular' },
   { name: 'Airing Today', path: '/3/tv/airing_today' },
-  { name: 'On the Air', path: '/3/tv/on_the_air' }
+  { name: 'On the Air', path: '//tv/on_the_air' }
 ];
 
 for (const catalog of catalogs) {
-  test(`Validate ${catalog.name} catalog`, async () => {
+  test(`Validate ${catalog.name} catalog`, async ({}, TestInfo) => {
     const api = await createApiContext(`${process.env.TMDB_ACCESS_TOKEN}`);
     const service = new SerieCatalogService(api);
     
     const response = await service.getCatalog(catalog.path);
-    await service.assertSuccess(response);
+    await service.assertSuccess(response, catalog.path, TestInfo);
   });
 }
 
-test('Unauthorized request should return 401', async () => {
+test('Unauthorized request should return 401', async ({}, TestInfo) => {
   const api = await createApiContext(`${process.env.TMDB_BAD_API_KEY}`);
   const service = new SerieCatalogService(api);
+  const endpoint = '/3/tv/airing_today';
 
-  const response = await service.getCatalog('/3/tv/airing_today');
-  await service.assertUnauthorized(response);
+  const response = await service.getCatalog(endpoint);
+  await service.assertUnauthorized(response, endpoint, TestInfo);
 });
 
-test('Unauthorized (Invalid Characters API_KEY) request should return 401', async () => {
+test('Unauthorized (Invalid Characters API_KEY) request should return 401', async ({}, TestInfo) => {
   const api = await createApiContext(`${process.env.TMDB_NO_API_KEY}`);
   const service = new SerieCatalogService(api);
+  const endpoint = '/3/tv/on_the_air';
 
-  const response = await service.getCatalog('/3/tv/on_the_air');
-  await service.assertUnauthorized(response);
+  const response = await service.getCatalog(endpoint);
+  await service.assertUnauthorized(response, endpoint, TestInfo);
 });
 
-test('Unauthorized (Empty API_KEY) request should return 401', async () => {
+test('Unauthorized (Empty API_KEY) request should return 401', async ({}, TestInfo) => {
   const api = await createApiContext();
   const service = new SerieCatalogService(api);
+  const endpoint = '/3/tv/popular';
 
-  const response = await service.getCatalog('/3/tv/on_the_air');
-  await service.assertUnauthorized(response);
+  const response = await service.getCatalog(endpoint);
+  await service.assertUnauthorized(response, endpoint, TestInfo);
 });

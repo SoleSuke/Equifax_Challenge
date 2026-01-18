@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { TestInfo, expect, APIResponse } from '@playwright/test';
 import { BaseApiService } from './baseApi.service';
 
 export class SerieCatalogService extends BaseApiService {
@@ -7,30 +7,74 @@ export class SerieCatalogService extends BaseApiService {
     return this.get(endpoint);
   }
 
-  async assertSuccess(response: any) {
-    expect(response.status()).toBe(200);
+  async assertSuccess(
+    response: APIResponse,
+    endpoint: string,
+    testInfo: TestInfo
+  ): Promise<void> {
+    
     const body = await response.json();
 
-    expect(body).toEqual(expect.objectContaining({
-      page: expect.any(Number),
-      total_pages: expect.any(Number),
-      total_results: expect.any(Number),
-      results: expect.any(Array)
-    }));
+    try {
+      expect(response.status()).toBe(200);
+    
+      expect(body).toEqual(expect.objectContaining({
+        page: expect.any(Number),
+        total_pages: expect.any(Number),
+        total_results: expect.any(Number),
+        results: expect.any(Array)
+      }));
 
-    expect(body.results.length).toBeGreaterThan(0);
+      expect(body.results.length).toBeGreaterThan(0);
 
-    const serie = body.results[0];
-    expect(serie).toEqual(expect.objectContaining({
-      id: expect.any(Number),
-      name: expect.any(String),
-      first_air_date: expect.any(String)
-    }));
+      const serie = body.results[0];
+      expect(serie).toEqual(expect.objectContaining({
+        id: expect.any(Number),
+        name: expect.any(String),
+        first_air_date: expect.any(String)
+      }));
+    } catch (error: any) {
+      await testInfo.attach('API Assertion Failure', {
+        body: JSON.stringify(
+          {
+            endpoint,
+            status: response.status(),
+            responseBody: body
+          },
+          null,
+          2
+        ),
+        contentType: 'application/json'
+      });
+      throw error;
+    }    
   }
 
-    async assertUnauthorized(response: any) {
-    expect(response.status()).toBe(401);
-    const body = await response.json();
-    expect(body.status_message).toContain('Invalid API key');
+    async assertUnauthorized(
+      response: APIResponse,
+      endpoint: string,
+      testInfo: TestInfo
+    ): Promise<void> {
+      const body = await response.json();
+
+      try {
+        expect(response.status()).toBe(401);
+    
+        expect(body.status_message).toContain('Invalid API key');
+      } catch (error: any) {
+      await testInfo.attach('API Invalid API Key Assertion Failure', {
+        body: JSON.stringify(
+          {
+            endpoint,
+            status: response.status(),
+            responseBody: body
+          },
+          null,
+          2
+        ),
+        contentType: 'application/json'
+      });
+      throw error;
+    } 
   }
 }
